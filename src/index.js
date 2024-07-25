@@ -9,12 +9,18 @@ import testRoutes from './routes/testRoutes.js';
 import viajeRoutes from './routes/viajeRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import usersViajesRoutes from './routes/usersViajesRoutes.js';
-import { testConnection } from './db.js';
+import { testConnection, sequelize } from './db.js';
 import dotenv from 'dotenv';
 // import { insertInitialUserData } from './start_data.js'; // solo se usa para poblar inicialmente la DB
 dotenv.config();
 
 const app = express();
+
+sequelize.sync({ alter: true }).then(() => {
+  console.log('Modelos sincronizados con la base de datos');
+}).catch(error => {
+  console.error('Error al sincronizar los modelos con la base de datos:', error);
+});
 
 // Configura el middleware CORS para que peuda recibir solicitudes de POST, PUT, DELETE, UPDATE, etc.
 app.use(cors({

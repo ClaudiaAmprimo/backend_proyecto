@@ -1,24 +1,28 @@
 import UsersViajes from '../models/usersViajesModel.js';
 import { validationResult } from 'express-validator';
 
-export const getUsersViajes = async (req, res) => {
+export const getUserViajes = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+    const user_id = req.user.id_user;
+    const usersViajes = await UsersViajes.findAll({ where: { user_id } });
+
+    if (usersViajes.length === 0) {
+      return res.status(404).json({
+        code: -6,
+        message: 'No tiene viajes asociados'
+      });
     }
 
-    const usersViajes = await UsersViajes.findAll();
     res.status(200).json({
       code: 1,
-      message: 'UsersViajes List',
+      message: 'UserViajes List',
       data: usersViajes
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       code: -100,
-      message: 'Ha ocurrido un error al obtener los usuarios_viajes'
+      message: 'Ha ocurrido un error al obtener los viajes del usuario'
     });
   }
 };

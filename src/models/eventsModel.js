@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../db.js';
 import Viaje from './viajeModel.js';
+import User from './userModel.js';
 
 const Event = sequelize.define('Event', {
   id_event: {
@@ -50,11 +51,21 @@ const Event = sequelize.define('Event', {
   },
   user_id_create: {
     type: DataTypes.INTEGER(11).UNSIGNED,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: User,
+      key: 'id_user'
+    },
+    index: true 
   },
   user_id_paid: {
     type: DataTypes.INTEGER(11).UNSIGNED,
-    allowNull: true
+    allowNull: true,
+    references: {
+      model: User,
+      key: 'id_user'
+    },
+    index: true
   }
 }, {
   timestamps: true,
@@ -64,5 +75,7 @@ const Event = sequelize.define('Event', {
 
 Viaje.hasMany(Event, { foreignKey: 'viaje_id' });
 Event.belongsTo(Viaje, { foreignKey: 'viaje_id' });
+User.hasMany(Event, { foreignKey: 'user_id_create' });
+Event.belongsTo(User, { foreignKey: 'user_id_create' });
 
 export default Event;

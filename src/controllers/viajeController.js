@@ -1,4 +1,5 @@
 import Viaje from '../models/viajeModel.js';
+import UsersViajes from '../models/usersViajesModel.js';
 import { validationResult } from 'express-validator';
 
 export const getViajes = async (req, res) => {
@@ -8,7 +9,13 @@ export const getViajes = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const viajes = await Viaje.findAll();
+    const userId = req.user.id_user;
+
+    const userViajes = await UsersViajes.findAll({ where: { user_id: userId } });
+    const viajeIds = userViajes.map(uv => uv.viaje_id);
+
+    const viajes = await Viaje.findAll({ where: { id_viaje: viajeIds } });
+
     res.status(200).json({
       code: 1,
       message: 'Viajes List',
@@ -39,6 +46,15 @@ export const getViajeById = async (req, res) => {
       });
     }
 
+    const userId = req.user.id_user;
+    const userViaje = await UsersViajes.findOne({ where: { user_id: userId, viaje_id: id } });
+    if (!userViaje) {
+      return res.status(403).json({
+        code: -10,
+        message: 'No tiene permiso para acceder a este viaje.'
+      });
+    }
+
     res.status(200).json({
       code: 1,
       message: 'Viaje Detail',
@@ -52,7 +68,6 @@ export const getViajeById = async (req, res) => {
     });
   }
 };
-
 export const createViaje = async (req, res) => {
   try {
     const errors = validationResult(req);

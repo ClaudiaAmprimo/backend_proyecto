@@ -1,4 +1,5 @@
 import Event from '../models/eventsModel.js';
+import UsersViajes from '../models/usersViajesModel.js';
 import { validationResult } from 'express-validator';
 
 export const getEvents = async (req, res) => {
@@ -8,12 +9,18 @@ export const getEvents = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const events = await Event.findAll();
+    const userId = req.user.id_user;
+
+    const userViajes = await UsersViajes.findAll({ where: { user_id: userId } });
+    const viajeIds = userViajes.map(userViaje => userViaje.viaje_id);
+
+    const events = await Event.findAll({ where: { viaje_id: viajeIds } });
+
     res.status(200).json({
       code: 1,
       message: 'Events List',
       data: events
-    });ev
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -39,6 +46,15 @@ export const getEventById = async (req, res) => {
       });
     }
 
+    const userId = req.user.id_user;
+    const userViaje = await UsersViajes.findOne({ where: { user_id: userId, viaje_id: event.viaje_id } });
+    if (!userViaje) {
+      return res.status(403).json({
+        code: -10,
+        message: 'No tiene permiso para acceder a este evento.'
+      });
+    }
+
     res.status(200).json({
       code: 1,
       message: 'Event Detail',
@@ -61,6 +77,16 @@ export const getEventsByViajeId = async (req, res) => {
     }
 
     const { id_viaje } = req.params;
+    const userId = req.user.id_user;
+
+    const userViaje = await UsersViajes.findOne({ where: { user_id: userId, viaje_id: id_viaje } });
+    if (!userViaje) {
+      return res.status(403).json({
+        code: -10,
+        message: 'No tiene permiso para acceder a los eventos de este viaje.'
+      });
+    }
+
     const events = await Event.findAll({ where: { viaje_id: id_viaje } });
 
     if (events.length === 0) {
@@ -83,7 +109,6 @@ export const getEventsByViajeId = async (req, res) => {
     });
   }
 };
-
 
 export const createEvent = async (req, res) => {
   try {
