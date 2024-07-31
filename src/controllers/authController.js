@@ -106,6 +106,7 @@ export const login = async (req, res) => {
       message: 'Login OK',
       data: {
         user: {
+          id_user: user.id_user,
           name: user.name,
           surname: user.surname,
           email: user.email

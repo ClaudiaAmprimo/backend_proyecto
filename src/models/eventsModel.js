@@ -50,16 +50,16 @@ const Event = sequelize.define('Event', {
     allowNull: true
   },
   user_id_create: {
-    type: DataTypes.INTEGER(11).UNSIGNED,
+    type: DataTypes.INTEGER(8).UNSIGNED,
     allowNull: false,
     references: {
       model: User,
       key: 'id_user'
     },
-    index: true 
+    index: true
   },
   user_id_paid: {
-    type: DataTypes.INTEGER(11).UNSIGNED,
+    type: DataTypes.INTEGER(8).UNSIGNED,
     allowNull: true,
     references: {
       model: User,

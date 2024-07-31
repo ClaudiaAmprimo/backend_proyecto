@@ -117,14 +117,33 @@ export const createEvent = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const newEvent = await Event.create(req.body);
+    const { titulo, ubicacion, fecha_inicio, fecha_fin, costo, comentarios, viaje_id, user_id_create } = req.body;
+
+    if (!user_id_create) {
+      return res.status(400).json({
+        code: -5,
+        message: 'User ID is required'
+      });
+    }
+
+    const newEvent = await Event.create({
+      titulo,
+      ubicacion,
+      fecha_inicio,
+      fecha_fin,
+      costo,
+      comentarios,
+      viaje_id,
+      user_id_create
+    });
+
     res.status(201).json({
       code: 1,
       message: 'Event Added Successfully',
       data: newEvent
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error creating event:', error);
     res.status(500).json({
       code: -100,
       message: 'Ha ocurrido un error al añadir el evento'

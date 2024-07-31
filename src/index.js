@@ -4,14 +4,13 @@ import cookieParser from "cookie-parser";
 import cors from 'cors'; //para poder hacer puts, y tal desde el cliente al servidor
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
-import bookRoutes from './routes/bookRoutes.js';
 import testRoutes from './routes/testRoutes.js';
 import viajeRoutes from './routes/viajeRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import usersViajesRoutes from './routes/usersViajesRoutes.js';
 import { testConnection, sequelize } from './db.js';
 import dotenv from 'dotenv';
-// import { insertInitialUserData } from './start_data.js'; // solo se usa para poblar inicialmente la DB
+import { insertInitialUserData } from './start_data.js'; // solo se usa para poblar inicialmente la DB
 dotenv.config();
 
 const app = express();
@@ -43,8 +42,6 @@ await testConnection();
 // Configurar rutas
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
-app.use('/book', bookRoutes);
-
 app.use('/test', testRoutes);
 app.use('/viaje', viajeRoutes);
 app.use('/event', eventRoutes);
