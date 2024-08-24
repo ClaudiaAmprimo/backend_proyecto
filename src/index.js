@@ -8,10 +8,16 @@ import testRoutes from './routes/testRoutes.js';
 import viajeRoutes from './routes/viajeRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import usersViajesRoutes from './routes/usersViajesRoutes.js';
+import mapboxRoutes from './routes/mapboxRoutes.js';
 import { testConnection, sequelize } from './db.js';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { insertInitialUserData } from './start_data.js'; // solo se usa para poblar inicialmente la DB
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -39,6 +45,8 @@ app.use(express.urlencoded({ extended: true })); // Para analizar datos de formu
 await testConnection();
 // await insertInitialUserData(); // solo se usa para poblar la DB con start_data
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Configurar rutas
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
@@ -46,6 +54,7 @@ app.use('/test', testRoutes);
 app.use('/viaje', viajeRoutes);
 app.use('/event', eventRoutes);
 app.use('/users-viajes', usersViajesRoutes);
+app.use('/mapbox', mapboxRoutes);
 
 // Iniciar el servidor
 app.listen(3000, () => {

@@ -2,6 +2,7 @@ import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
 import fs from 'fs';
 import path from 'path';
+import sharp from 'sharp';
 //https://www.bezkoder.com/node-js-express-file-upload/
 
 
@@ -75,25 +76,30 @@ export const uploadPhoto = async (req, res) => {
       });
     } else console.log("El usuario no tiene foto, la seteo en la DB");
 
-    //Actualizo la imagen del usuario
-    console.log("Guardo la imagen: " + req.file.filename + " en el id de usuario: " + req.user.id_user);
-    await User.update({ photo: req.file.filename }, { where: { id_user: req.user.id_user } })
-    return res.status(200).json({
-      code: 1,
-      message: "Uploaded the file successfully: " + req.file.originalname,
-    });
+  const resizedFileName = `resized-${req.file.filename}`;
+  await sharp(req.file.path)
+    .resize(200, 200)
+    .toFile(`${rutaArchivo}${resizedFileName}`);
 
-  } catch (err) {
+  console.log("Guardo la imagen: " + resizedFileName + " en el id de usuario: " + req.user.id_user);
+  await User.update({ photo: resizedFileName }, { where: { id_user: req.user.id_user } });
 
-    if (err.code == "LIMIT_FILE_SIZE") {
-      return res.status(500).send({
-        message: "File size cannot be larger than 2MB!",
-      });
-    }
+  return res.status(200).json({
+    code: 1,
+    message: "Uploaded and resized the file successfully: " + req.file.originalname,
+  });
 
-    res.status(500).send({
-      message: `Could not upload the file: ${req.file.originalname}. ${err}`,
-      error: `${err}`
+} catch (err) {
+  //** Manejar errores de límite de tamaño o cualquier otro error
+  if (err.code == "LIMIT_FILE_SIZE") {
+    return res.status(500).send({
+      message: "File size cannot be larger than 2MB!",
     });
   }
+
+  res.status(500).send({
+    message: `Could not upload the file: ${req.file.originalname}. ${err}`,
+    error: `${err}`
+  });
+}
 };

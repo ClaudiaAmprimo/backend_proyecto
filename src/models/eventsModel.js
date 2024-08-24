@@ -45,6 +45,11 @@ const Event = sequelize.define('Event', {
     type: DataTypes.DECIMAL(7, 2),
     allowNull: true
   },
+  categoria: {
+    type: DataTypes.ENUM('Hospedaje', 'Transporte', 'Turismo', 'Comida'),
+    allowNull: false,
+    defaultValue: 'Turismo'
+  },
   comentarios: {
     type: DataTypes.STRING(100),
     allowNull: true

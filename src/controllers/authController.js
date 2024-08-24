@@ -22,6 +22,7 @@ export const register = async (req, res) => {
     }
 
     const { email, password, name, surname } = req.body;
+    const photo = req.file;
     // Verificar si ya existe un usuario con el mismo correo electrónico
     const existingUser = await User.findOne({ where: { email }});
     if (existingUser) {
@@ -32,7 +33,7 @@ export const register = async (req, res) => {
     }
     // Crear un nuevo usuario
     const hashedPassword = await bcrypt.hash(password, Number(process.env.BCRYPT_SALT));
-    const newUser = new User({ email, password: hashedPassword, name, surname, status: 1 });
+    const newUser = new User({ email, password: hashedPassword, name, surname, photo: photo ? photo.filename : null,  status: 1 });
     await newUser.save();
 
     // Generar un token de acceso y lo guardo en un token seguro (httpOnly)
@@ -46,10 +47,19 @@ export const register = async (req, res) => {
     });
     res.setHeader('Set-Cookie', token);
 
-    // Enviar una respuesta al cliente
     res.status(200).json({
       code: 1,
       message: 'Usuario registrado correctamente',
+      token: accessToken,
+      data: {
+        user: {
+          id_user: newUser.id_user,
+          name: newUser.name,
+          surname: newUser.surname,
+          email: newUser.email,
+          photo: newUser.photo
+        }
+      }
     });
   } catch (error) {
     console.error(error);
@@ -109,7 +119,8 @@ export const login = async (req, res) => {
           id_user: user.id_user,
           name: user.name,
           surname: user.surname,
-          email: user.email
+          email: user.email,
+          photo: user.photo
         }
       }
     });

@@ -23,19 +23,40 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING(30),
     allowNull: true,
   },
+  // roles: {
+  //   type: DataTypes.STRING(30),
+  //   allowNull: false,
+  //   get() {
+  //     const rawValue = this.getDataValue('roles');
+  //     if (!rawValue) {
+  //       console.log('Valor de roles es undefined o null');
+  //       return [];
+  //     }
+  //     return rawValue.split(',');
+  //   },
+  //   set(value) {
+  //     this.setDataValue('roles', value.join(','));
+  //   }
+  // },
+  //Por ahora permito que los roles sean null
   roles: {
     type: DataTypes.STRING(30),
-    allowNull: false,
+    allowNull: true,
+    defaultValue: 'user',
     get() {
       const rawValue = this.getDataValue('roles');
       if (!rawValue) {
         console.log('Valor de roles es undefined o null');
-        return [];
+        return ['user'];
       }
       return rawValue.split(',');
     },
     set(value) {
-      this.setDataValue('roles', value.join(','));
+      if (value) {
+        this.setDataValue('roles', value.join(','));
+      } else {
+        this.setDataValue('roles', 'user');
+      }
     }
   },
   photo: {

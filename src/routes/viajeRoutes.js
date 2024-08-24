@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getViajes, getViajeById, createViaje, updateViaje, deleteViaje } from '../controllers/viajeController.js';
+import { getViajes, getViajeById, createViaje, updateViaje, deleteViaje} from '../controllers/viajeController.js';
 import { authenticateToken } from '../middlewares/authenticateToken.js';
 
 const router = Router();

@@ -10,11 +10,18 @@ export const getEvents = async (req, res) => {
     }
 
     const userId = req.user.id_user;
+    const { categoria } = req.query;
 
     const userViajes = await UsersViajes.findAll({ where: { user_id: userId } });
     const viajeIds = userViajes.map(userViaje => userViaje.viaje_id);
 
-    const events = await Event.findAll({ where: { viaje_id: viajeIds } });
+    // const events = await Event.findAll({ where: { viaje_id: viajeIds } });
+    const whereClause = { viaje_id: viajeIds };
+    if (categoria) {
+      whereClause.categoria = categoria;
+    }
+    const events = await Event.findAll({ where: whereClause });
+
 
     res.status(200).json({
       code: 1,
@@ -117,7 +124,7 @@ export const createEvent = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { titulo, ubicacion, fecha_inicio, fecha_fin, costo, comentarios, viaje_id, user_id_create } = req.body;
+    const { titulo, ubicacion, fecha_inicio, fecha_fin, costo, comentarios, categoria, viaje_id, user_id_create } = req.body;
 
     if (!user_id_create) {
       return res.status(400).json({
@@ -133,6 +140,7 @@ export const createEvent = async (req, res) => {
       fecha_fin,
       costo,
       comentarios,
+      categoria,
       viaje_id,
       user_id_create
     });

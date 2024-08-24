@@ -1,5 +1,6 @@
 import Viaje from '../models/viajeModel.js';
 import UsersViajes from '../models/usersViajesModel.js';
+import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
 
 export const getViajes = async (req, res) => {
