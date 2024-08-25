@@ -22,7 +22,8 @@ export const register = async (req, res) => {
     }
 
     const { email, password, name, surname } = req.body;
-    const photo = req.file;
+    const photo = req.file ? req.file.filename : 'Profile_avatar_placeholder.png';
+
     // Verificar si ya existe un usuario con el mismo correo electrónico
     const existingUser = await User.findOne({ where: { email }});
     if (existingUser) {
@@ -33,7 +34,7 @@ export const register = async (req, res) => {
     }
     // Crear un nuevo usuario
     const hashedPassword = await bcrypt.hash(password, Number(process.env.BCRYPT_SALT));
-    const newUser = new User({ email, password: hashedPassword, name, surname, photo: photo ? photo.filename : null,  status: 1 });
+    const newUser = new User({ email, password: hashedPassword, name, surname, photo,  status: 1 });
     await newUser.save();
 
     // Generar un token de acceso y lo guardo en un token seguro (httpOnly)

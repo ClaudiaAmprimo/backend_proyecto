@@ -21,12 +21,8 @@ export const registerValidator = [
         .withMessage("Password should be string")
         .isLength({ min: 5 })
         .withMessage("Password should be at least 5 characters")
-        .custom(value => {
-            if (value == '123456') {
-                throw new Error('Este pass es muy basico');
-            }
-            return true;
-        }),
+        .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{5,}$/)
+        .withMessage("Password must contain at least one letter and one number"),
     body("name").isString(),
     body("surname").isString()
 ]
