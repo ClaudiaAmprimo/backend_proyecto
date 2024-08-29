@@ -78,7 +78,7 @@ export const uploadPhoto = async (req, res) => {
 
   const resizedFileName = `resized-${req.file.filename}`;
   await sharp(req.file.path)
-    .resize(200, 200)
+    .resize(100, 100)
     .toFile(`${rutaArchivo}${resizedFileName}`);
 
   console.log("Guardo la imagen: " + resizedFileName + " en el id de usuario: " + req.user.id_user);
@@ -102,4 +102,84 @@ export const uploadPhoto = async (req, res) => {
     error: `${err}`
   });
 }
+};
+
+export const updateUserProfile = async (req, res) => {
+  try {
+    const { name, surname } = req.body;
+    const userId = req.user.id_user;
+
+    let photo = req.user.photo;
+    const rutaArchivo = "./src/uploads/";
+
+    if (req.file) {
+      const newFileName = req.file.filename;
+      const resizedFileName = `resized-${newFileName}`;
+
+      if (photo && fs.existsSync(path.join(rutaArchivo, photo))) {
+        try {
+          fs.unlinkSync(path.join(rutaArchivo, photo));
+        } catch (error) {
+          console.error('Error al eliminar la foto existente:', error);
+        }
+      }
+
+      await sharp(req.file.path)
+        .resize(100, 100)
+        .toFile(path.join(rutaArchivo, resizedFileName));
+
+      fs.renameSync(path.join(rutaArchivo, resizedFileName), path.join(rutaArchivo, newFileName));
+
+      photo = newFileName;
+    }
+
+    await User.update(
+      { name, surname, photo },
+      { where: { id_user: userId } }
+    );
+
+    const updatedUser = await User.findByPk(userId);
+    res.status(200).json({
+      code: 1,
+      message: 'Profile updated successfully',
+      data: updatedUser
+    });
+
+  } catch (error) {
+    console.error('Error al actualizar el perfil:', error);
+    res.status(500).json({
+      code: -200,
+      message: 'An error occurred while updating the profile',
+      error: error.message
+    });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const userId = req.user.id_user;
+    const user = await User.findByPk(userId);
+
+    if (user && user.photo) {
+      const photoPath = path.join("./src/uploads/", user.photo);
+
+      if (fs.existsSync(photoPath)) {
+        try {
+          fs.unlinkSync(photoPath);
+        } catch (error) {
+          console.error('Error al eliminar la foto del usuario:', error);
+        }
+      }
+    }
+
+    await User.destroy({ where: { id_user: userId } });
+
+    res.status(200).json({ message: 'Usuario eliminado correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar el usuario:', error);
+    res.status(500).json({
+      message: 'Error al eliminar el usuario',
+      error: error.message
+    });
+  }
 };

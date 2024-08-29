@@ -12,7 +12,7 @@ export const getAmigos = async (req, res) => {
         {
           model: User,
           as: 'Friends',
-          attributes: ['id_user', 'name', 'surname', 'email']
+          attributes: ['id_user', 'name', 'surname', 'email', 'photo']
         }
       ]
     });
@@ -33,7 +33,14 @@ export const addAmigo = async (req, res) => {
       return res.status(400).json({ message: 'No puedes agregarte a ti mismo como amigo' });
     }
 
-    const existingFriendship = await Amigos.findOne({ where: { user_id: userId, amigo_id } });
+    const existingFriendship = await Amigos.findOne({
+      where: {
+        [Op.or]: [
+          { user_id: userId, amigo_id },
+          { user_id: amigo_id, amigo_id: userId }
+        ]
+      }
+    });
 
     if (existingFriendship) {
       return res.status(400).json({ message: 'Este usuario ya es tu amigo' });
@@ -41,31 +48,33 @@ export const addAmigo = async (req, res) => {
 
     await Amigos.create({ user_id: userId, amigo_id });
     await Amigos.create({ user_id: amigo_id, amigo_id: userId });
+
     res.status(201).json({ message: 'Amigo agregado con éxito' });
   } catch (error) {
     console.error('Error al agregar amigo:', error);
-    res.status(500).json({ message: 'Error al agregar amigo' });
+    res.status(500).json({ message: 'Error al agregar amigo', error: error.message });
   }
 };
-
 
 export const removeAmigo = async (req, res) => {
   try {
     const { amigo_id } = req.params;
     const userId = req.user.id_user;
 
-    const amigo = await Amigos.findOne({ where: { user_id: userId, amigo_id } });
-    if (!amigo) {
+    const deleted1 = await Amigos.destroy({ where: { user_id: userId, amigo_id } });
+    const deleted2 = await Amigos.destroy({ where: { user_id: amigo_id, amigo_id: userId } });
+
+    if (deleted1 === 0 && deleted2 === 0) {
       return res.status(404).json({ message: 'Amigo no encontrado' });
     }
 
-    await amigo.destroy();
     res.status(200).json({ message: 'Amigo eliminado con éxito' });
   } catch (error) {
     console.error('Error al eliminar amigo:', error);
-    res.status(500).json({ message: 'Error al eliminar amigo' });
+    res.status(500).json({ message: 'Error al eliminar amigo', error: error.message });
   }
 };
+
 
 export const searchUsers = async (req, res) => {
   try {
