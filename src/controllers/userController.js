@@ -163,12 +163,15 @@ export const deleteUser = async (req, res) => {
     if (user && user.photo) {
       const photoPath = path.join("./src/uploads/", user.photo);
 
-      if (fs.existsSync(photoPath)) {
+      if (user.photo !== 'Profile_avatar_placeholder.png' && fs.existsSync(photoPath)) {
         try {
           fs.unlinkSync(photoPath);
+          console.log('Foto del usuario eliminada correctamente:', user.photo);
         } catch (error) {
           console.error('Error al eliminar la foto del usuario:', error);
         }
+      } else {
+        console.log('No se elimina el placeholder o la foto no existe:', user.photo);
       }
     }
 
