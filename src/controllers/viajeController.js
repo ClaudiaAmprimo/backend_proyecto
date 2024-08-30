@@ -69,6 +69,7 @@ export const getViajeById = async (req, res) => {
     });
   }
 };
+
 export const createViaje = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -77,9 +78,16 @@ export const createViaje = async (req, res) => {
     }
 
     const newViaje = await Viaje.create(req.body);
+    const userId = req.user.id_user;
+
+    await UsersViajes.create({
+      user_id: userId,
+      viaje_id: newViaje.id_viaje
+    });
+
     res.status(201).json({
       code: 1,
-      message: 'Viaje Added Successfully',
+      message: 'Viaje Added Successfully and Associated with the User',
       data: newViaje
     });
   } catch (error) {
