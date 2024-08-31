@@ -34,7 +34,17 @@ export const createUsersViajes = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const newUserViaje = await UsersViajes.create(req.body);
+    const { user_id, viaje_id } = req.body;
+
+    const existingAssociation = await UsersViajes.findOne({ where: { user_id, viaje_id } });
+    if (existingAssociation) {
+      return res.status(400).json({
+        code: -1,
+        message: 'La asociación ya existe'
+      });
+    }
+
+    const newUserViaje = await UsersViajes.create({ user_id, viaje_id });
     res.status(201).json({
       code: 1,
       message: 'UsersViajes Added Successfully',
