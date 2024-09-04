@@ -2,6 +2,7 @@ import Amigos from '../models/amigosModel.js';
 import User from '../models/userModel.js';
 import { Op } from 'sequelize';
 import { validationResult } from 'express-validator';
+import UsersViajes from '../models/usersViajesModel.js';
 
 export const getAmigos = async (req, res) => {
   try {
@@ -75,6 +76,36 @@ export const removeAmigo = async (req, res) => {
   }
 };
 
+export const getFriendsByViaje = async (req, res) => {
+  try {
+    const { viajeId } = req.params;
+
+    const usersViajes = await UsersViajes.findAll({
+      where: { viaje_id: viajeId },
+      include: [
+        {
+          model: User,
+          as: 'User',
+          attributes: ['id_user', 'name', 'surname', 'email', 'photo']
+        }
+      ]
+    });
+
+    if (!usersViajes.length) {
+      return res.status(404).json({
+        message: 'No se encontraron amigos asociados a este viaje'
+      });
+    }
+
+    const friends = usersViajes.map(uv => uv.User);
+
+    res.status(200).json(friends);
+
+  } catch (error) {
+    console.error('Error al obtener los amigos del viaje:', error);
+    res.status(500).json({ message: 'Error al obtener los amigos del viaje' });
+  }
+};
 
 export const searchUsers = async (req, res) => {
   try {

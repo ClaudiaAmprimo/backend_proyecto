@@ -2,6 +2,7 @@ import Viaje from '../models/viajeModel.js';
 import UsersViajes from '../models/usersViajesModel.js';
 import User from '../models/userModel.js';
 import { validationResult } from 'express-validator';
+import Event from '../models/eventsModel.js';
 
 export const getViajes = async (req, res) => {
   try {
@@ -137,7 +138,8 @@ export const deleteViaje = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { id } = req.params;
+    const { id } = req.params; 
+
     const viaje = await Viaje.findByPk(id);
     if (!viaje) {
       return res.status(404).json({
@@ -146,13 +148,27 @@ export const deleteViaje = async (req, res) => {
       });
     }
 
+    const userId = req.user.id_user;
+    const userViaje = await UsersViajes.findOne({ where: { user_id: userId, viaje_id: id } });
+    if (!userViaje) {
+      return res.status(403).json({
+        code: -10,
+        message: 'No tiene permiso para eliminar este viaje.'
+      });
+    }
+
+    await UsersViajes.destroy({ where: { viaje_id: id } });
+
+    await Event.destroy({ where: { viaje_id: id } });
+
     await viaje.destroy();
+
     res.status(200).json({
       code: 1,
-      message: 'Viaje Deleted Successfully'
+      message: 'Viaje eliminado correctamente'
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error al eliminar el viaje:', error);
     res.status(500).json({
       code: -100,
       message: 'Ha ocurrido un error al eliminar el viaje'

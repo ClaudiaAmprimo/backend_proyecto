@@ -26,5 +26,7 @@ const UsersViajes = sequelize.define('UsersViajes', {
 
 User.belongsToMany(Viaje, { through: UsersViajes, foreignKey: 'user_id' });
 Viaje.belongsToMany(User, { through: UsersViajes, foreignKey: 'viaje_id' });
+UsersViajes.belongsTo(User, { foreignKey: 'user_id', as: 'User' });
+UsersViajes.belongsTo(Viaje, { foreignKey: 'viaje_id', as: 'Viaje' });
 
 export default UsersViajes;
