@@ -34,13 +34,12 @@ export const getViajes = async (req, res) => {
 
 export const getViajeById = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
     const { id } = req.params;
-    const viaje = await Viaje.findByPk(id);
+    const viaje = await Viaje.findByPk(id, {
+      include: [{ model: User, as: 'Users' }]
+    });
+    console.log(viaje);
+
     if (!viaje) {
       return res.status(404).json({
         code: -6,
@@ -63,7 +62,7 @@ export const getViajeById = async (req, res) => {
       data: viaje
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error en getViajeById:', error.message || error);
     res.status(500).json({
       code: -100,
       message: 'Ha ocurrido un error al obtener el viaje'
@@ -73,6 +72,7 @@ export const getViajeById = async (req, res) => {
 
 export const createViaje = async (req, res) => {
   try {
+    console.log('Datos recibidos para crear el viaje:', req.body);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -102,13 +102,16 @@ export const createViaje = async (req, res) => {
 
 export const updateViaje = async (req, res) => {
   try {
+    console.log('Datos recibidos para actualizar el viaje:', req.body);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { id } = req.params;
+    const { amigos, ...viajeData } = req.body;
     const viaje = await Viaje.findByPk(id);
+
     if (!viaje) {
       return res.status(404).json({
         code: -6,
@@ -116,14 +119,45 @@ export const updateViaje = async (req, res) => {
       });
     }
 
-    await viaje.update(req.body);
+    await viaje.update(viajeData);
+
+    if (amigos && amigos.length >= 0) {
+      const userId = req.user.id_user;
+
+      if (!amigos.includes(userId)) {
+        amigos.push(userId);
+      }
+
+      const existingAssociations = await UsersViajes.findAll({ where: { viaje_id: id } });
+      const existingAmigoIds = existingAssociations.map(assoc => assoc.user_id);
+      const amigosToAdd = amigos.filter(amigoId => !existingAmigoIds.includes(amigoId));
+      const amigosToRemove = existingAmigoIds.filter(amigoId => !amigos.includes(amigoId) && amigoId !== userId);
+
+      if (amigosToRemove.length > 0) {
+        await UsersViajes.destroy({
+          where: {
+            viaje_id: id,
+            user_id: amigosToRemove
+          }
+        });
+      }
+
+      if (amigosToAdd.length > 0) {
+        const newAssociations = amigosToAdd.map(amigoId => ({
+          user_id: amigoId,
+          viaje_id: id
+        }));
+        await UsersViajes.bulkCreate(newAssociations);
+      }
+    }
+
     res.status(200).json({
       code: 1,
-      message: 'Viaje Updated Successfully',
+      message: 'Viaje actualizado correctamente',
       data: viaje
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error al actualizar el viaje:', error);
     res.status(500).json({
       code: -100,
       message: 'Ha ocurrido un error al actualizar el viaje'
@@ -138,7 +172,7 @@ export const deleteViaje = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { id } = req.params; 
+    const { id } = req.params;
 
     const viaje = await Viaje.findByPk(id);
     if (!viaje) {

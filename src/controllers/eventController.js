@@ -86,6 +86,8 @@ export const getEventsByViajeId = async (req, res) => {
     const { id_viaje } = req.params;
     const userId = req.user.id_user;
 
+    console.log(`Obteniendo eventos para viaje: ${id_viaje}`);
+
     const userViaje = await UsersViajes.findOne({ where: { user_id: userId, viaje_id: id_viaje } });
     if (!userViaje) {
       return res.status(403).json({
