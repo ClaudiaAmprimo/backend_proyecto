@@ -126,12 +126,32 @@ export const createEvent = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { titulo, ubicacion, fecha_inicio, fecha_fin, costo, comentarios, categoria, viaje_id, user_id_create } = req.body;
+    const {
+      titulo,
+      ubicacion,
+      fecha_inicio,
+      fecha_fin,
+      costo,
+      comentarios,
+      categoria,
+      viaje_id,
+      user_id_create,
+      user_id_paid,
+      cost_distribution
+    } = req.body;
 
     if (!user_id_create) {
       return res.status(400).json({
         code: -5,
         message: 'User ID is required'
+      });
+    }
+
+    const userViaje = await UsersViajes.findOne({ where: { user_id: user_id_paid, viaje_id } });
+    if (!userViaje) {
+      return res.status(403).json({
+        code: -10,
+        message: 'El usuario que pagó no está asociado con este viaje.'
       });
     }
 
@@ -144,7 +164,9 @@ export const createEvent = async (req, res) => {
       comentarios,
       categoria,
       viaje_id,
-      user_id_create
+      user_id_create,
+      user_id_paid,
+      cost_distribution
     });
 
     res.status(201).json({
@@ -169,6 +191,11 @@ export const updateEvent = async (req, res) => {
     }
 
     const { id } = req.params;
+    const {
+      user_id_paid,
+      cost_distribution
+    } = req.body;
+
     const event = await Event.findByPk(id);
     if (!event) {
       return res.status(404).json({
@@ -177,7 +204,22 @@ export const updateEvent = async (req, res) => {
       });
     }
 
-    await event.update(req.body);
+    if (user_id_paid) {
+      const userViaje = await UsersViajes.findOne({ where: { user_id: user_id_paid, viaje_id: event.viaje_id } });
+      if (!userViaje) {
+        return res.status(403).json({
+          code: -10,
+          message: 'El usuario que pagó no está asociado con este viaje.'
+        });
+      }
+    }
+
+    await event.update({
+      ...req.body,
+      user_id_paid,
+      cost_distribution
+    });
+
     res.status(200).json({
       code: 1,
       message: 'Event Updated Successfully',
@@ -191,6 +233,7 @@ export const updateEvent = async (req, res) => {
     });
   }
 };
+
 
 export const deleteEvent = async (req, res) => {
   try {
