@@ -72,10 +72,6 @@ const Event = sequelize.define('Event', {
     },
     index: true
   },
-  cost_distribution: {
-    type: DataTypes.JSON,
-    allowNull: true
-  },
 }, {
   timestamps: true,
   updatedAt: 'updated_at',
@@ -85,7 +81,10 @@ const Event = sequelize.define('Event', {
 Viaje.hasMany(Event, { foreignKey: 'viaje_id' });
 Event.belongsTo(Viaje, { foreignKey: 'viaje_id' });
 User.hasMany(Event, { foreignKey: 'user_id_create' });
-User.hasMany(Event, { foreignKey: 'user_id_paid' }); 
+User.hasMany(Event, { foreignKey: 'user_id_paid' });
 Event.belongsTo(User, { foreignKey: 'user_id_create' });
+User.hasMany(Event, { foreignKey: 'user_id_paid', as: 'UserPaid' });
+Event.belongsTo(User, { foreignKey: 'user_id_paid', as: 'UserPaid' });
+
 
 export default Event;

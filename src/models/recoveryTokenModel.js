@@ -18,7 +18,13 @@ const RecoveryToken = sequelize.define('RecoveryToken', {
     allowNull: false
   }
 }, {
-  timestamps: false
+  timestamps: false,
+  indexes: [
+    {
+      unique: true,
+      fields: ['token']
+    }
+  ]
 });
 User.hasMany(RecoveryToken, { foreignKey: 'user_id' });
 RecoveryToken.belongsTo(User, { foreignKey: 'user_id' });
