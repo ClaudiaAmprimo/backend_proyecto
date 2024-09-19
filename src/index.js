@@ -9,7 +9,8 @@ import viajeRoutes from './routes/viajeRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import usersViajesRoutes from './routes/usersViajesRoutes.js';
 import mapboxRoutes from './routes/mapboxRoutes.js';
-import amigoRoutes from './routes/amigoRoutes.js'
+import amigoRoutes from './routes/amigoRoutes.js';
+import costDistributionRoutes from './routes/costDistributionRoutes.js';
 import { testConnection, sequelize } from './db.js';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -57,6 +58,7 @@ app.use('/event', eventRoutes);
 app.use('/users-viajes', usersViajesRoutes);
 app.use('/mapbox', mapboxRoutes);
 app.use('/friends', amigoRoutes);
+app.use('/cost-distributions', costDistributionRoutes);
 
 // Iniciar el servidor
 app.listen(3000, () => {
