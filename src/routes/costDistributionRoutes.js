@@ -1,7 +1,8 @@
 import express from 'express';
 import {getAllCostDistributions, getCostDistributionById, createCostDistribution,
   updateCostDistribution, deleteCostDistribution, getCostDistributionsByViajeId,
-  getTotalPaidByUsers, getSumCostDistributionsByUser, getUserBalanceByTrip, getUserBalanceByUser} from '../controllers/costDistributionController.js';
+  getTotalPaidByUsers, getSumCostDistributionsByUser, getUserBalanceByTrip,
+  getUserBalanceByUser, payDebt} from '../controllers/costDistributionController.js';
 
 const router = express.Router();
 
@@ -15,5 +16,6 @@ router.get('/balance-by-user/:id_viaje/:user_id', getUserBalanceByUser);
 router.post('/', createCostDistribution);
 router.put('/:id', updateCostDistribution);
 router.delete('/:id', deleteCostDistribution);
+router.patch('/:id/pay', payDebt); 
 
 export default router;

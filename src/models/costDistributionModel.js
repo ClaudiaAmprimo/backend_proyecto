@@ -10,7 +10,7 @@ const CostDistribution = sequelize.define('CostDistribution', {
     primaryKey: true,
   },
   event_id: {
-    type: DataTypes.INTEGER(11), 
+    type: DataTypes.INTEGER(11),
     allowNull: false,
     references: {
       model: Event,
@@ -33,6 +33,11 @@ const CostDistribution = sequelize.define('CostDistribution', {
     type: DataTypes.DECIMAL(7, 2),
     allowNull: false,
   },
+  paid_amount: {
+    type: DataTypes.DECIMAL(7, 2),
+    allowNull: false,
+    defaultValue: 0.00, 
+  }
 }, {
   timestamps: true,
   updatedAt: 'updated_at',
