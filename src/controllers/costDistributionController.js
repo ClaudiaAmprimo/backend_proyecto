@@ -117,11 +117,16 @@ export const getSumCostDistributionsByUser = async (req, res) => {
       type: sequelize.QueryTypes.SELECT
     });
 
-    if (!sumCostDistributions || sumCostDistributions.length === 0) {
+    const formattedSumCostDistributions = sumCostDistributions.map(sum => ({
+      ...sum,
+      total_amount: parseFloat(sum.total_amount) || 0
+    }));
+
+    if (!formattedSumCostDistributions || formattedSumCostDistributions.length === 0) {
       return res.status(404).json({ message: 'No se encontraron distribuciones de costos para este viaje' });
     }
 
-    res.status(200).json({ message: 'Sumas de distribuciones por usuario', data: sumCostDistributions });
+    res.status(200).json({ message: 'Sumas de distribuciones por usuario', data: formattedSumCostDistributions });
   } catch (error) {
     console.error('Error al obtener la suma de las distribuciones:', error);
     res.status(500).json({ message: 'Error al obtener la suma de las distribuciones', error });
@@ -145,37 +150,38 @@ export const getUserBalanceByTrip = async (req, res) => {
     const userBalances = await sequelize.query(`
       SELECT
         cd.id AS cost_distribution_id,
-        u.id_user,
-        u.name,
-        u.surname,
-        COALESCE((SELECT SUM(e.costo)
-                  FROM Events e
-                  WHERE e.user_id_paid = u.id_user
-                  AND e.viaje_id = :id_viaje), 0) AS total_pagado,
-        COALESCE((SELECT SUM(cd.amount)
-                  FROM CostDistributions cd
-                  LEFT JOIN Events e2 ON cd.event_id = e2.id_event
-                  WHERE cd.user_id = u.id_user
-                  AND e2.viaje_id = :id_viaje), 0) AS total_deuda,
-        COALESCE((SELECT SUM(e.costo)
-                  FROM Events e
-                  WHERE e.user_id_paid = u.id_user
-                  AND e.viaje_id = :id_viaje), 0) -
-        COALESCE((SELECT SUM(cd.amount)
-                  FROM CostDistributions cd
-                  LEFT JOIN Events e2 ON cd.event_id = e2.id_event
-                  WHERE cd.user_id = u.id_user
-                  AND e2.viaje_id = :id_viaje), 0) AS balance
-      FROM Users u
-      LEFT JOIN CostDistributions cd ON u.id_user = cd.user_id
-      WHERE EXISTS (SELECT 1 FROM Events e WHERE e.viaje_id = :id_viaje AND e.user_id_paid = u.id_user)
-         OR EXISTS (SELECT 1 FROM CostDistributions cd LEFT JOIN Events e2 ON cd.event_id = e2.id_event WHERE e2.viaje_id = :id_viaje AND cd.user_id = u.id_user)
+        cd.amount,
+        deudor.id_user AS deudor_id,
+        deudor.name AS deudor_name,
+        deudor.surname AS deudor_surname,
+        acreedor.id_user AS acreedor_id,
+        acreedor.name AS acreedor_name,
+        acreedor.surname AS acreedor_surname,
+        (cd.amount - cd.paid_amount) AS net_balance,
+        cd.paid_amount
+      FROM CostDistributions cd
+      JOIN Events e ON cd.event_id = e.id_event
+      JOIN Users deudor ON cd.user_id = deudor.id_user
+      JOIN Users acreedor ON e.user_id_paid = acreedor.id_user
+      WHERE e.viaje_id = :id_viaje
+        AND deudor.id_user <> acreedor.id_user
+        AND (cd.amount - cd.paid_amount) > 0
     `, {
       replacements: { id_viaje },
       type: sequelize.QueryTypes.SELECT
     });
 
-    res.status(200).json({ message: 'Balance por usuario', data: userBalances });
+    const formattedBalances = userBalances.map(balance => ({
+      ...balance,
+      net_balance: parseFloat(balance.net_balance),
+      paid_amount: parseFloat(balance.paid_amount),
+      cost_distribution_id: parseInt(balance.cost_distribution_id, 10),
+      amount: parseFloat(balance.amount)
+    }));
+
+    console.log('Formatted Balances:', formattedBalances);
+
+    res.status(200).json({ message: 'Balance por usuario', data: formattedBalances });
   } catch (error) {
     console.error('Error al obtener el balance por usuario:', error);
     res.status(500).json({ message: 'Error al obtener el balance por usuario', error });
@@ -187,53 +193,61 @@ export const getUserBalanceByUser = async (req, res) => {
 
   try {
     const userBalances = await sequelize.query(`
-     SELECT
-      cd.id AS cost_distribution_id,
-      cd.paid_amount, -- Agregar aquí el paid_amount
-      deudor.id_user AS deudor_id,
-      acreedor.id_user AS acreedor_id,
-      deudor.name AS deudor_name,
-      deudor.surname AS deudor_surname,
-      acreedor.name AS acreedor_name,
-      acreedor.surname AS acreedor_surname,
-      SUM(CASE
-          WHEN cd.user_id = deudor.id_user THEN cd.amount
-          ELSE 0
-          END) AS balance_deudor_a_acreedor,
-      SUM(CASE
-          WHEN cd.user_id = acreedor.id_user THEN cd.amount
-          ELSE 0
-          END) AS balance_acreedor_a_deudor,
-      SUM(CASE
-          WHEN cd.user_id = deudor.id_user THEN cd.amount
-          ELSE -cd.amount
-          END) AS net_balance,
-      SUM(CASE
-          WHEN e.user_id_paid = deudor.id_user THEN e.costo
-          ELSE 0
-          END) AS total_pagado_deudor,
-      SUM(CASE
-          WHEN e.user_id_paid = acreedor.id_user THEN e.costo
-          ELSE 0
-          END) AS total_pagado_acreedor,
-      (SUM(CASE
-          WHEN cd.user_id = deudor.id_user THEN cd.amount
-          ELSE -cd.amount
-          END) - SUM(CASE
-          WHEN e.user_id_paid = deudor.id_user THEN e.costo
-          ELSE 0
-          END)) AS balance_final
-    FROM CostDistributions cd
-    JOIN Events e ON cd.event_id = e.id_event
-    JOIN Users deudor ON cd.user_id = deudor.id_user
-    JOIN Users acreedor ON e.user_id_paid = acreedor.id_user
-    WHERE e.viaje_id = :id_viaje
-    GROUP BY deudor.id_user, acreedor.id_user, cd.id
-    HAVING balance_final <> 0;
+      SELECT
+        cd.id AS cost_distribution_id,
+        cd.paid_amount,
+        deudor.id_user AS deudor_id,
+        acreedor.id_user AS acreedor_id,
+        deudor.name AS deudor_name,
+        deudor.surname AS deudor_surname,
+        acreedor.name AS acreedor_name,
+        acreedor.surname AS acreedor_surname,
+        SUM(CASE
+            WHEN cd.user_id = deudor.id_user THEN cd.amount
+            ELSE 0
+            END) AS balance_deudor_a_acreedor,
+        SUM(CASE
+            WHEN cd.user_id = acreedor.id_user THEN cd.amount
+            ELSE 0
+            END) AS balance_acreedor_a_deudor,
+        SUM(CASE
+            WHEN cd.user_id = deudor.id_user THEN cd.amount
+            ELSE -cd.amount
+            END) AS net_balance,
+        SUM(CASE
+            WHEN e.user_id_paid = deudor.id_user THEN e.costo
+            ELSE 0
+            END) AS total_pagado_deudor,
+        SUM(CASE
+            WHEN e.user_id_paid = acreedor.id_user THEN e.costo
+            ELSE 0
+            END) AS total_pagado_acreedor,
+        (SUM(CASE
+            WHEN cd.user_id = deudor.id_user THEN cd.amount
+            ELSE -cd.amount
+            END) - SUM(CASE
+            WHEN e.user_id_paid = deudor.id_user THEN e.costo
+            ELSE 0
+            END)) AS balance_final
+      FROM CostDistributions cd
+      JOIN Events e ON cd.event_id = e.id_event
+      JOIN Users deudor ON cd.user_id = deudor.id_user
+      JOIN Users acreedor ON e.user_id_paid = acreedor.id_user
+      WHERE e.viaje_id = :id_viaje
+        AND deudor.id_user <> acreedor.id_user
+      GROUP BY deudor.id_user, acreedor.id_user, cd.id
+      HAVING balance_final <> 0;
     `, {
       replacements: { id_viaje, user_id },
       type: sequelize.QueryTypes.SELECT
     });
+
+    const formattedBalances = userBalances.map(balance => ({
+      ...balance,
+      balance_deudor_a_acreedor: parseFloat(balance.balance_deudor_a_acreedor),
+      balance_acreedor_a_deudor: parseFloat(balance.balance_acreedor_a_deudor),
+      net_balance: parseFloat(balance.net_balance)
+    }));
 
     if (userBalances.length === 0) {
       return res.status(200).json({ message: 'No hay deudas o acreencias para este usuario.', data: [] });
@@ -274,8 +288,6 @@ export const payDebt = async (req, res) => {
     return res.status(500).json({ message: 'Error al procesar el pago de la deuda.', error });
   }
 };
-
-
 
 export const updateCostDistribution = async (req, res) => {
   try {
