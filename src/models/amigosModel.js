@@ -23,7 +23,6 @@ const Amigos = sequelize.define('Amigos', {
   timestamps: false
 });
 
-// User.belongsToMany(User, { as: 'UserFriends', through: Amigos, foreignKey: 'user_id', otherKey: 'amigo_id' });
 User.belongsToMany(User, { as: 'Friends', through: Amigos, foreignKey: 'user_id', otherKey: 'amigo_id' });
 User.belongsToMany(User, { as: 'FriendOf', through: Amigos, foreignKey: 'amigo_id', otherKey: 'user_id' });
 

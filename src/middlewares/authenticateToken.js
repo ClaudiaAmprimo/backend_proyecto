@@ -1,4 +1,3 @@
-// src/middlewares/authenticateToken.js
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 
@@ -40,7 +39,7 @@ export const authenticateToken = (allowedRoles) => async (req, res, next) => {
     next();
   } catch (error) {
     console.error(error);
-    console.error("Error in authenticateToken middleware:", error); 
+    console.error("Error in authenticateToken middleware:", error);
     res.status(500).json({
       code: -100,
       message: 'Ha ocurrido un error al autenticar el token de acceso'

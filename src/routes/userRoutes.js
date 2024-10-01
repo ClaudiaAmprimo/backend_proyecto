@@ -1,4 +1,3 @@
-// src/routes/userRoutes.js
 import { Router } from 'express';
 import { getUser, uploadPhoto, updateUserProfile, deleteUser } from '../controllers/userController.js';
 import { authenticateToken } from '../middlewares/authenticateToken.js';

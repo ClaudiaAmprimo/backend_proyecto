@@ -1,6 +1,9 @@
-# Backend de Nodejs
+## Descripción
 
-Aquí se encuentra una breve descripción del proyecto.
+Travel Hub es una aplicación desarrollada en **Angular**, que permite gestionar viajes y eventos asociados, incluyendo funcionalidades de distribución de gastos entre los participantes, itinerario de viajes, calendario y mapa.
+
+El backend del proyecto está realizado con Nodejs.
+
 
 ## Instalación
 
@@ -9,6 +12,50 @@ Para instalar este proyecto, sigue estos pasos:
 1. Clona el repositorio en tu máquina local.
 2. Instala las dependencias utilizando `npm install`.
 
+
+Para instalar este proyecto, sigue estos pasos:
+
+1. Clona el repositorio en tu máquina local
+
+```
+  git clone https://github.com/ClaudiaAmprimo/sprint_8_backend.git
+```
+
+
+2. Verifica si tienes instalado node.js y npm con:
+
+```
+  node -v
+```
+
+````
+  npm -v
+```
+
+Si no estan instalados, hay que instalarlo. Mas informacion en la pagina oficial: `https://nodejs.org/en`
+
+
+3. Verifica si está instalado nodemon con
+
+```
+  npx nodemon -v
+```
+
+Si no esta instalado instalarlo con
+
+```
+  npm install nodemon --save-dev
+```
+
+4. Instala las dependencias utilizando
+
+```
+  npm install
+```
+
+5. Crear el archivo .env (la informacion del .env se envia por separado)
+
+
 ## Uso
 
 Para ejecutar el proyecto, utiliza el siguiente comando:
@@ -16,22 +63,14 @@ Para ejecutar el proyecto, utiliza el siguiente comando:
 ```
 npm run start
 ```
+
 Para ejecutar el proyecto en dev, utiliza el siguiente comando:
 
 ```
 npm run dev
 ```
 
-## Contribución
+## Importante
 
-Si quieres contribuir a este proyecto, por favor sigue estos pasos:
-
-1. Haz un fork del repositorio.
-2. Crea una nueva rama (`git checkout -b feature/nueva-funcionalidad`).
-3. Haz tus cambios y haz un commit (`git commit -m "Agregué una nueva funcionalidad"`).
-4. Envía tus cambios al repositorio remoto (`git push origin feature/nueva-funcionalidad`).
-5. Crea un pull request para que tus cambios sean revisados.
-
-## Licencia
-
-Este proyecto está licenciado bajo la Licencia MIT. Ver el archivo `LICENSE` para más información.
+Crear una base de datos en mySQL con nombre final_project1
+Importar el archivo incluido en el repositorio final_project1.sql

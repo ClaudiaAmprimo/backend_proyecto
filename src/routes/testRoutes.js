@@ -1,4 +1,3 @@
-// src/routes/userRoutes.js
 import { Router } from 'express';
 import { authenticateToken } from '../middlewares/authenticateToken.js';
 import { allAccess, userBoard, moderatorBoard, adminBoard } from '../controllers/testController.js';

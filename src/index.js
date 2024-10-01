@@ -1,7 +1,6 @@
-// app.js
 import express from 'express';
 import cookieParser from "cookie-parser";
-import cors from 'cors'; //para poder hacer puts, y tal desde el cliente al servidor
+import cors from 'cors'; 
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import testRoutes from './routes/testRoutes.js';

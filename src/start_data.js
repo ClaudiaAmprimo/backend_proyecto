@@ -1,4 +1,4 @@
-// --->>> para poblar la DB 1 sola vez con datos iniciales, luego se comenta.
+// --->>> para poblar la DB 1 sola vez con datos iniciales.
 import User from './models/userModel.js';
 import Viaje from './models/viajeModel.js';
 import Event from './models/eventsModel.js';
