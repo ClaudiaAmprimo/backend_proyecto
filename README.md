@@ -70,3 +70,4 @@ npm run dev
 Crear una base de datos en mySQL con nombre final_project1
 
 Importar el archivo incluido en el repositorio final_project1.sql
+
