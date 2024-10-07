@@ -28,7 +28,7 @@ const app = express();
 
 const allowedOrigins = [
   'http://localhost:4200',
-  'https://proyecto-final-rho-one.vercel.app' // Dominio de Vercel
+  'https://proyecto-final-rho-one.vercel.app'
 ];
 
 app.use(cors({
@@ -80,16 +80,14 @@ const startServer = async () => {
     // Insertar datos iniciales si es necesario (descomentar si es necesario)
     // await insertInitialUserData();
 
-    // Iniciar el servidor en el puerto especificado (puede ser configurado en .env)
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
       console.log(`Servidor iniciado en el puerto ${PORT}`);
     });
   } catch (error) {
     console.error('Error al iniciar el servidor:', error);
-    process.exit(1); // Salir del proceso con error
+    process.exit(1);
   }
 };
 
-// Iniciar el servidor
 startServer();
