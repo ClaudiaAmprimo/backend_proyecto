@@ -29,23 +29,31 @@ sequelize.sync({ alter: true }).then(() => {
   console.error('Error al sincronizar los modelos con la base de datos:', error);
 });
 
-// Configura el middleware CORS para que peuda recibir solicitudes de POST, PUT, DELETE, UPDATE, etc.
+// Configuración de CORS: Permitir tanto localhost como Vercel en producción
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+  : ['http://localhost:4200'];
+
 app.use(cors({
   credentials: true,
-  origin: 'http://localhost:4200'
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS policy no permite el origen: ${origin}`), false);
+    }
+  }
 }));
 
-//header and populate req.cookies with an object keyed by the cookie names
 app.use(cookieParser());
 
 // Middleware para analizar el cuerpo de las solicitudes con formato JSON
 app.use(express.json());
 
 // Middleware para analizar el cuerpo de las solicitudes con datos de formulario
-app.use(express.urlencoded({ extended: true })); // Para analizar datos de formularios en el cuerpo de la solicitud
+app.use(express.urlencoded({ extended: true }));
 
 await testConnection();
-// await insertInitialUserData(); // solo se usa para poblar la DB con start_data
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -60,6 +68,7 @@ app.use('/mapbox', mapboxRoutes);
 app.use('/friends', amigoRoutes);
 app.use('/cost-distributions', costDistributionRoutes);
 
-app.listen(3000, () => {
-  console.log("Servidor iniciado en el puerto 3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor iniciado en el puerto ${PORT}`);
 });
