@@ -29,10 +29,10 @@ sequelize.sync({ alter: true }).then(() => {
   console.error('Error al sincronizar los modelos con la base de datos:', error);
 });
 
-// Configura el middleware CORS para que peuda recibir solicitudes de POST, PUT, DELETE, UPDATE, etc.
+// Update the CORS configuration to allow requests from your Vercel URL
 app.use(cors({
   credentials: true,
-  origin: 'http://localhost:4200'
+  origin: ['http://localhost:4200', 'https://proyecto-final-rho-one.vercel.app']
 }));
 
 //header and populate req.cookies with an object keyed by the cookie names
