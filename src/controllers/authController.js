@@ -42,7 +42,7 @@ export const register = async (req, res) => {
     const token = serialize('token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: 60 * 60 * 24 * 30,
       path: '/',
     });
@@ -105,7 +105,7 @@ export const login = async (req, res) => {
     const token = serialize('token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: 60 * 60 * 24 * 30,
       path: '/',
     });
@@ -247,7 +247,7 @@ export const changePassword = async (req, res) => {
     const token_jwt = serialize('token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: 60 * 60 * 24 * 30,
       path: '/',
     });
@@ -283,7 +283,7 @@ export const logout = async (req, res) => {
   const token = serialize('token', null, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'none',
     maxAge: -1,
     path: '/',
   });
