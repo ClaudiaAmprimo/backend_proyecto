@@ -32,7 +32,7 @@ sequelize.sync({ alter: true }).then(() => {
 // Update the CORS configuration to allow requests from your Vercel URL
 app.use(cors({
   credentials: true,
-  origin: ['http://localhost:4200', 'https://proyecto-final-rho-one.vercel.app']
+  origin: ['http://localhost:4200', 'https://travel-hub-rho-one.vercel.app']
 }));
 
 //header and populate req.cookies with an object keyed by the cookie names

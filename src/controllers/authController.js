@@ -9,7 +9,7 @@ import { serialize } from 'cookie';
 // Creación de funciones personalizadas
 import { esPar, contraseniasCoinciden } from '../utils/utils.js';
 
-const clietURL = process.env.CLIENT_URL;
+const clientURL = process.env.CLIENT_URL;
 
 export const register = async (req, res) => {
   try {
@@ -162,7 +162,7 @@ export const forgotPassword = async (req, res) => {
       created_at: Date.now(),
     }).save();
 
-    const link = `${clietURL}/change-password?token=${resetToken}&id=${user.id_user}`;
+    const link = `${clientURL}/change-password?token=${resetToken}&id=${user.id_user}`;
 
     await sendEmail(
       user.email,
